@@ -127,7 +127,7 @@ pipeline {
                 script {
                     withKubeConfig([credentialsId:'job-cluster-secret']){
                         if(DeployModeConfigmap){
-                                sh "kubectl apply -R -f ${env.WORKSPACE}/configk8s/configmap/${App_env}/*.yml -n ${DeployAppNamespace}"
+                                sh "kubectl apply -R -f ${env.WORKSPACE}/configk8s/configmap/*.yml -n ${DeployAppNamespace}"
                                 sh "kubectl apply -R -f ${env.WORKSPACE}/configk8s/deployment/*.yml -n ${DeployAppNamespace}"
                                 sh "kubectl apply -R -f ${env.WORKSPACE}/configk8s/service/*.yml -n ${DeployAppNamespace}"
                                 //sh "kubectl apply -R -f ${env.WORKSPACE}/configk8s/kong/*.yaml -n ${DeployAppNamespace}"
