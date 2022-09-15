@@ -84,7 +84,7 @@ pipeline {
             {
                 script
                     {
-                   // sh 'CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .'
+                    sh 'CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .'
                     a = docker.build("${RegistryUrlRepository}/${DeployAppProjectName}/${DeployAppServiceName}:${DeployAppVersionTag}", "-f ./Dockerfile .")
                     if (SecurityScanImages){
                       sh '''
