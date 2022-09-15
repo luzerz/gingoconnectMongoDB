@@ -8,6 +8,7 @@ RUN go mod tidy
 
 COPY . ./
 
+
 RUN go build -o /main .
 
 EXPOSE 8080

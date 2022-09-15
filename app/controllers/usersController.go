@@ -8,9 +8,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
-	"github.com/luzerz/apijobtest/configs"
-	"github.com/luzerz/apijobtest/models"
-	"github.com/luzerz/apijobtest/responses"
+	"github.com/luzerz/apijobtest/app/configs"
+	"github.com/luzerz/apijobtest/app/models"
+	"github.com/luzerz/apijobtest/app/responses"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
