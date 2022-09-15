@@ -1,4 +1,16 @@
-FROM alpine:3.13
-RUN apk update && apk --no-cache add curl && apk --no-cache add tzdata
-ADD main /main
-ENTRYPOINT [ "/main" ]
+FROM golang:1.16-alpine
+
+WORKDIR /app
+
+COPY go.mod ./
+COPY go.sum ./
+RUN go mod download
+
+COPY *.go ./
+
+RUN go build -o /docker-gs-ping
+
+EXPOSE 8080
+
+CMD [ "/docker-gs-ping" ]
+
