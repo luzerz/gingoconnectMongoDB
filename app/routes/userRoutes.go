@@ -8,9 +8,9 @@ import (
 )
 
 func UserRoute(router *gin.Engine) {
-	router.GET("/", func(c *gin.Context) {
+	router.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
-			"message": "Available",
+			"message": "UP",
 		})
 	})
 	router.POST("/internal-insert", controllers.CreateUser())

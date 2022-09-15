@@ -29,17 +29,30 @@ spec:
           image: asia.gcr.io/jobfinder-362313/apigo-service:latest
           imagePullPolicy: Always
           ports:
-            - containerPort: 8080
+            - containerPort: 80
           envFrom:
           - configMapRef:
               name: apigo-service-env
           resources:
             limits:
               cpu: 100m
-              memory: 100Mi
+              memory: 200Mi
             requests:
               cpu: 50m
-              memory: 50Mi     
+              memory: 512Mi
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 120
+            timeoutSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /liveness
+              port: 8080
+            initialDelaySeconds: 130
+            timeoutSeconds: 10
+            failureThreshold: 10  
       restartPolicy: Always
-      terminationGracePeriodSeconds: 30
+      terminationGracePeriodSeconds: 10
 
