@@ -1,5 +1,5 @@
 DeployMode:
-  UpdateImage: true
+  UpdateImage: false
   Configmap:  true
 DeployApp:
   ProjectName: jobfinder-362313
