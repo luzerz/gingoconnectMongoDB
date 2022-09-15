@@ -123,7 +123,7 @@ pipeline {
         stage('Deploy to Cluster') {
             steps
             {
-                    script {
+                script {
                     withKubeConfig([credentialsId:'job-cluster-secret']){
                         if(DeployModeConfigmap){
                                 sh "kubectl apply -R -f ${env.WORKSPACE}/configk8s/configmap/${App_env}/*.yml -n ${DeployAppNamespace}"
@@ -151,22 +151,22 @@ pipeline {
 
                         }
                     }
-                    }
                 }
+            }
         }
 
-    post {
-        always {
-            echo 'One way or another, I have finished'
-            sh "docker rmi -f ${RegistryUrlRepository}/${DeployAppProjectName}/${DeployAppServiceName}:${DeployAppVersionTag}  || echo 'ignore' "
-            cleanWs()
-        }
-        success {
-            echo 'Succeeded!'
-        }
-        failure {
-            echo 'Failed!!!'
-        }
+        // post {
+        //     always {
+        //         echo 'One way or another, I have finished'
+        //         sh "docker rmi -f ${RegistryUrlRepository}/${DeployAppProjectName}/${DeployAppServiceName}:${DeployAppVersionTag}  || echo 'ignore' "
+        //         cleanWs()
+        //     }
+        //     success {
+        //         echo 'Succeeded!'
+        //     }
+        //     failure {
+        //         echo 'Failed!!!'
+        //     }
+        // }
     }
-}
 }
