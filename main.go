@@ -13,5 +13,5 @@ func main() {
 	configs.ConnectDB()
 	routes.UserRoute(router) //add this
 
-	router.Run("localhost:8080")
+	router.Run("localhost:80")
 }
