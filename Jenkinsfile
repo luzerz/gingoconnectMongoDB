@@ -13,7 +13,7 @@ pipeline {
                        Branch_name = "${GIT_BRANCH.split('/').size() > 1 ? GIT_BRANCH.split('/')[1] : GIT_BRANCH}"
                        Tag = "${GIT_BRANCH.split('/').size() > 2 ? GIT_BRANCH.split('/')[2] : GIT_BRANCH}"
                        println("BRANCH : ${Branch_name}")
-                       if(Branch_name == 'develop'){
+                       if(Branch_name == 'main'){
                           App_env = 'beta'
                           DeployAppNamespace         = properties.DeployApp.NamespaceDev
                           DeployAppVersionTag       = 'latest'
@@ -103,63 +103,62 @@ pipeline {
             }
         }
 
-    stage('Push images') {
-           steps
-           {
-                script
-                {
-                    withCredentials([file(credentialsId: 'jobfinder-secret', variable: 'GC_KEY')]){
-                        sh "cat '$GC_KEY' | docker login -u _json_key --password-stdin https://asia.gcr.io"
-                        sh "gcloud auth activate-service-account --key-file='$GC_KEY'"
-                        sh "gcloud auth configure-docker"
-                        sh (script: 'gcloud auth print-access-token',returnStdout: true).trim()
-                        echo "Pushing image To GCR"
-                        a.push()
+        stage('Push images') {
+            steps
+            {
+                    script
+                    {
+                        withCredentials([file(credentialsId: 'jobfinder-secret', variable: 'GC_KEY')]){
+                            sh "cat '$GC_KEY' | docker login -u _json_key --password-stdin https://asia.gcr.io"
+                            sh "gcloud auth activate-service-account --key-file='$GC_KEY'"
+                            sh "gcloud auth configure-docker"
+                            sh (script: 'gcloud auth print-access-token',returnStdout: true).trim()
+                            echo "Pushing image To GCR"
+                            a.push()
+                        }
                     }
                 }
-            }
         }
 
-    stage('Deploy to Cluster') {
-           steps
-          {
-             	script {
-             	  withKubeConfig([credentialsId:'job-cluster-secret']){
-                       if(DeployModeConfigmap){
-                             sh "kubectl apply -R -f ${env.WORKSPACE}/configk8s/configmap/${App_env}/*.yml -n ${DeployAppNamespace}"
-                             sh "kubectl apply -R -f ${env.WORKSPACE}/configk8s/deployment/*.yml -n ${DeployAppNamespace}"
-                             sh "kubectl apply -R -f ${env.WORKSPACE}/configk8s/service/*.yml -n ${DeployAppNamespace}"
-                             //sh "kubectl apply -R -f ${env.WORKSPACE}/configk8s/kong/*.yaml -n ${DeployAppNamespace}"
-                       }
-                       if(DeployModeUpdateImage) {
-                            deploy     = sh(returnStdout: true, script:"kubectl set image deployment/${DeployAppServiceName}  ${DeployAppServiceName}=${RegistryUrlRepository}/${DeployAppProjectName}/${DeployAppServiceName}:${DeployAppVersionTag} --record -n ${DeployAppNamespace} || true").trim()
-                            status     = sh(returnStdout: true, script:"kubectl rollout status deploy ${DeployAppServiceName} -n ${DeployAppNamespace} --timeout=60s || true").trim()
-                            patch      = sh(returnStdout: true, script:"kubectl set env deployment --env=\"LAST_PIPELINE_DEPLOY=\$(date +%s)\" ${DeployAppServiceName} -n "+ DeployAppNamespace).trim()
-                            podName    = sh(returnStdout: true, script:"kubectl get pod -n ${DeployAppNamespace} | grep ${DeployAppServiceName} | head -n 1 | awk '{print \$1}'").trim()
-                            describePo = sh(returnStdout: true, script:"kubectl get event -n ${DeployAppNamespace} --field-selector involvedObject.name=$podName").trim()
-                            allStatus  = sh(returnStdout: true, script:"kubectl get pod -n ${DeployAppNamespace}").trim()
+        stage('Deploy to Cluster') {
+            steps
+            {
+                    script {
+                    withKubeConfig([credentialsId:'job-cluster-secret']){
+                        if(DeployModeConfigmap){
+                                sh "kubectl apply -R -f ${env.WORKSPACE}/configk8s/configmap/${App_env}/*.yml -n ${DeployAppNamespace}"
+                                sh "kubectl apply -R -f ${env.WORKSPACE}/configk8s/deployment/*.yml -n ${DeployAppNamespace}"
+                                sh "kubectl apply -R -f ${env.WORKSPACE}/configk8s/service/*.yml -n ${DeployAppNamespace}"
+                                //sh "kubectl apply -R -f ${env.WORKSPACE}/configk8s/kong/*.yaml -n ${DeployAppNamespace}"
+                        }
+                        if(DeployModeUpdateImage) {
+                                deploy     = sh(returnStdout: true, script:"kubectl set image deployment/${DeployAppServiceName}  ${DeployAppServiceName}=${RegistryUrlRepository}/${DeployAppProjectName}/${DeployAppServiceName}:${DeployAppVersionTag} --record -n ${DeployAppNamespace} || true").trim()
+                                status     = sh(returnStdout: true, script:"kubectl rollout status deploy ${DeployAppServiceName} -n ${DeployAppNamespace} --timeout=60s || true").trim()
+                                patch      = sh(returnStdout: true, script:"kubectl set env deployment --env=\"LAST_PIPELINE_DEPLOY=\$(date +%s)\" ${DeployAppServiceName} -n "+ DeployAppNamespace).trim()
+                                podName    = sh(returnStdout: true, script:"kubectl get pod -n ${DeployAppNamespace} | grep ${DeployAppServiceName} | head -n 1 | awk '{print \$1}'").trim()
+                                describePo = sh(returnStdout: true, script:"kubectl get event -n ${DeployAppNamespace} --field-selector involvedObject.name=$podName").trim()
+                                allStatus  = sh(returnStdout: true, script:"kubectl get pod -n ${DeployAppNamespace}").trim()
 
-                            echo "$deploy  $status $podName $describePo $allStatus"
-                            boolean running = status.contains("successfully rolled out")
-                            if (running == true){
-                                    echo "\nStatus all pods is \n $allStatus"
-                                    currentBuild.result = 'SUCCESS'
-                            }
-                            else if ( running == false) {
-                                error('Deploy false ')
-                            }
+                                echo "$deploy  $status $podName $describePo $allStatus"
+                                boolean running = status.contains("successfully rolled out")
+                                if (running == true){
+                                        echo "\nStatus all pods is \n $allStatus"
+                                        currentBuild.result = 'SUCCESS'
+                                }
+                                else if ( running == false) {
+                                    error('Deploy false ')
+                                }
 
-                       }
-                   }
-                 }
-            }
+                        }
+                    }
+                    }
+                }
         }
 
     post {
         always {
             echo 'One way or another, I have finished'
             sh "docker rmi -f ${RegistryUrlRepository}/${DeployAppProjectName}/${DeployAppServiceName}:${DeployAppVersionTag}  || echo 'ignore' "
-           // sh "docker rmi $(docker images -f 'dangling=true' -q)"
             cleanWs()
         }
         success {
