@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apigo-service
+  labels:
+    app: apigo-service
+    version: latest
+spec:
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 600
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
+  selector:
+    matchLabels:
+      app: apigo-service
+      version: latest
+  template:
+    metadata:
+      labels:
+        app: apigo-service
+        version: latest
+    spec:
+      containers:
+        - name: apigo-service
+          image: asia.gcr.io/myorder-beta/apigo-service:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          envFrom:
+          - configMapRef:
+              name: apigo-service-env
+          resources:
+            limits:
+              cpu: 100m
+              memory: 200Mi
+            requests:
+              cpu: 50m
+              memory: 100Mi
+          volumeMounts:
+          - name: gc-storage
+            mountPath: "/etc/credentials"
+            readOnly: true        
+      volumes:
+      - name: gc-storage
+        secret:
+          secretName: gc-storage
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+

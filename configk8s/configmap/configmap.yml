@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: apigo-env
+  labels:
+    app: apigo-service
+data:
+  MONGOURI: mongodb://localhost:27017
