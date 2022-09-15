@@ -26,7 +26,7 @@ spec:
     spec:
       containers:
         - name: apigo-service
-          image: asia.gcr.io/myorder-beta/apigo-service:latest
+          image: asia.gcr.io/jobfinder-362313/apigo-service:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
@@ -36,18 +36,10 @@ spec:
           resources:
             limits:
               cpu: 100m
-              memory: 200Mi
+              memory: 100Mi
             requests:
               cpu: 50m
-              memory: 100Mi
-          volumeMounts:
-          - name: gc-storage
-            mountPath: "/etc/credentials"
-            readOnly: true        
-      volumes:
-      - name: gc-storage
-        secret:
-          secretName: gc-storage
+              memory: 50Mi     
       restartPolicy: Always
       terminationGracePeriodSeconds: 30
 
