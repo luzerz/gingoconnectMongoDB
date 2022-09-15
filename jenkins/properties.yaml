@@ -1,0 +1,31 @@
+DeployMode:
+  UpdateImage: true
+  Configmap:  true
+DeployApp:
+  ProjectName: jobfinder-362313
+  AppServiceName: apigo-service
+  NamespaceDev : dev
+  NameSpaceSIT : sit
+  NameSpaceUAT : uat
+  NameSpaceSTG : stg
+  NameSpacePRD : lsm
+  Language: nodejs
+Registry:
+  UrlRepository: asia.gcr.io
+  GCRCredential: myorder-beta-secret
+Security:
+  SonarQube:
+    Scan: true
+    ProjectKey: apigo-service
+    Sources: src
+    Host: http://34.87.77.168:9000
+    Login: b43fe91f047f48fb7f7e801a1cfa3a80e86f7334
+    Tests: src
+    TestInclusions: src/**/*.spec.ts
+    Exclusions: node_modules
+  ScanImages: false
+  ScanDAST: false
+Testing:
+  Unittest: false
+  IntegrateTest: false
+  Qa: false
