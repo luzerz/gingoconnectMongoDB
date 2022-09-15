@@ -1,6 +1,6 @@
 DeployMode:
-  UpdateImage: false
-  Configmap:  true
+  UpdateImage: true
+  Configmap:  false
 DeployApp:
   ProjectName: jobfinder-362313
   AppServiceName: apigo-service
